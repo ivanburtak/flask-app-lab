@@ -1,12 +1,48 @@
-from flask import Flask
+from flask import Flask, render_template
+from flask_sqlalchemy import SQLAlchemy
+from .config import config_map
+from sqlalchemy.orm import DeclarativeBase
+from flask_migrate import Migrate
+import os
 
-app = Flask(__name__)
-app.config.from_pyfile('../config.py')
+from dotenv import load_dotenv
 
-from . import views
+load_dotenv()
 
-from .users import users_bp
-app.register_blueprint(users_bp)
 
-from .products import products_bp
-app.register_blueprint(products_bp)
+class Base(DeclarativeBase):
+    pass
+
+
+db = SQLAlchemy(model_class=Base)
+migrate = Migrate()
+
+
+# Функція створення застосунку фабричного типу
+def create_app(config_name: str = os.environ.get("FLASK_CONFIG", "dev")) -> Flask:
+    app = Flask(__name__)
+    app.config.from_object(config_map[config_name])
+    print(f"Running in config: {config_name}")
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    with app.app_context():
+        # from .views import main as main_blueprint
+        # app.register_blueprint(main_blueprint)
+
+        from .posts import posts_bp
+        app.register_blueprint(posts_bp, url_prefix="/posts")
+
+        from app.posts.models import Post
+
+        if config_name == "test":
+            print("Registered routes:")
+            for rule in app.url_map.iter_rules():
+                print(rule)
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template('404.html'), 404
+
+    return app
