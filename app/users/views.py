@@ -1,6 +1,7 @@
 from flask import request, render_template, url_for, redirect, session, flash, make_response
 
 from . import users_bp
+from .forms import LoginForm
 
 USER_DATA = {
     "user": "admin",
@@ -40,20 +41,23 @@ def profile():
 
 @users_bp.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "GET":
-        return render_template("login.html")
+    form = LoginForm()
 
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        remember = form.remember.data
 
-    username = request.form.get("username")
-    password = request.form.get("password")
+        if username == USER_DATA["user"] and password == USER_DATA["password"]:
+            session["user"] = username
+            flash(f"Ви успішно ввійшли! Запам'ятати: {"так" if remember else "ні"}", "success")
+            return redirect(url_for("users.profile"))
+        else:
+            flash("Невірне ім'я користувача або пароль.", "danger")
+            return redirect(url_for("users.login"))
 
-    if username == USER_DATA["user"] and password == USER_DATA["password"]:
-        session["user"] = username
-        flash("Ви успішно ввійшли", "success")
-        return redirect(url_for("users.profile"))
-    else:
-        flash("Невірне ім'я користувача або пароль.", "danger")
-        return redirect(url_for("users.login"))
+    return render_template("login.html", form=form)
+
 @users_bp.route("/logout")
 def logout():
     session.pop("user", None)
