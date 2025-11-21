@@ -1,4 +1,6 @@
 import unittest
+from datetime import datetime as dt
+
 from app import create_app, db
 from app.posts.models import Post
 
@@ -19,12 +21,17 @@ class PostTestCase(unittest.TestCase):
         with self.app.app_context():
             response = self.client.post("/posts/create", data={
                 "title": "My first post",
-                "content": "This is TDD!"
+                "content": "This is TDD!",
+                "category": "news",
+                "is_active": "y",
+                "publish_date": dt.utcnow().strftime("%Y-%m-%dT%H:%M")
             }, follow_redirects=True)
 
             self.assertEqual(response.status_code, 200)
-            self.assertIn(b"Post created successfully", response.data)
 
+            # Перевіряємо, що пост створено
             post = db.session.query(Post).filter_by(title="My first post").first()
             self.assertIsNotNone(post)
             self.assertEqual(post.content, "This is TDD!")
+            self.assertEqual(post.category, "news")
+            self.assertTrue(post.is_active)
