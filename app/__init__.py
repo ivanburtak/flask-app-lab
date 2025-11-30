@@ -46,6 +46,8 @@ def create_app(config_name: str = os.environ.get("FLASK_CONFIG", "dev")) -> Flas
 
         from app.products.models import Product
 
+        from app.users.models import User
+
         if config_name == "test":
             print("Registered routes:")
             for rule in app.url_map.iter_rules():

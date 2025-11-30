@@ -2,9 +2,9 @@
 {% import 'macros/form_macros.html' as macros %}
 
 {% block content %}
-<h1>Add New Post</h1>
+  <h1>Add New Post</h1>
 
-<form method="POST">
+  <form method="POST">
     {{ form.hidden_tag() }}
 
     {{ macros.render_field(form.title) }}
@@ -12,7 +12,9 @@
     {{ macros.render_field(form.is_active) }}
     {{ macros.render_field(form.publish_date) }}
     {{ macros.render_field(form.category) }}
+    {{ macros.render_field(form.author_id) }}
+    {{ macros.render_field(form.tags) }}
 
     <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+  </form>
 {% endblock %}

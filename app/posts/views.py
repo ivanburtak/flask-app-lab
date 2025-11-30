@@ -2,25 +2,33 @@ from flask import render_template, flash, url_for, redirect, session, request
 
 from . import posts_bp
 from .forms import PostForm
-from .models import Post
+from .models import Post, Tag
 from app import db
+from app.users.models import User
 
 
 @posts_bp.route("/create", methods=["GET", "POST"])
 def create_post():
     form = PostForm()
 
-    if form.validate_on_submit():
-        author_name = session.get("username", "Anonymous")
+    authors = User.query.all()
+    form.author_id.choices = [(author.id, author.username) for author in authors]
 
+    tags = Tag.query.all()
+    form.tags.choices = [(tag.id, tag.name) for tag in tags]
+    if form.validate_on_submit():
         post = Post(
             title=form.title.data,
             content=form.content.data,
             category=form.category.data,
             is_active=form.is_active.data,
             posted=form.publish_date.data,
-            author=author_name
+            user_id=form.author_id.data,
         )
+
+        selected_tags = Tag.query.filter(Tag.id.in_(form.tags.data)).all()
+        post.tags.extend(selected_tags)
+
         db.session.add(post)
         db.session.commit()
 

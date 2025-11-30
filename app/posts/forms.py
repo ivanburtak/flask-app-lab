@@ -1,7 +1,7 @@
 from datetime import datetime as dt
 
 from flask_wtf import FlaskForm
-from wtforms.fields.choices import SelectField
+from wtforms.fields.choices import SelectField, SelectMultipleField
 from wtforms.fields.datetime import DateTimeLocalField
 from wtforms.fields.simple import StringField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, Length
@@ -30,3 +30,5 @@ class PostForm(FlaskForm):
         ],
         validators=[DataRequired()]
     )
+    author_id = SelectField("Author", coerce=int)
+    tags = SelectMultipleField("Tags", coerce=int)
